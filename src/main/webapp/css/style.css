@@ -1,0 +1,79 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    text-align: center;
+    color: white;
+}
+
+h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    font-size: 20px;
+    margin-bottom: 40px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.card {
+    padding: 25px 15px;
+    border-radius: 15px;
+    background: white;
+    color: #222;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.card h2 {
+    margin-bottom: 10px;
+}
+
+.jenkins {
+    border-top: 6px solid #d33833;
+}
+
+.maven {
+    border-top: 6px solid #f39c12;
+}
+
+.docker {
+    border-top: 6px solid #2496ed;
+}
+
+.tomcat {
+    border-top: 6px solid #8e44ad;
+}
+
+.button {
+    display: inline-block;
+    margin-top: 40px;
+    padding: 15px 30px;
+    background: white;
+    color: #5a3d9a;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+}
+
+.button:hover {
+    transform: scale(1.05);
+}
