@@ -8,7 +8,7 @@ pipeline {
                 git(
                     url: 'git@github.com:Deepika-29-coder/tomcat-Dockers.git',
                     branch: 'master',
-                    credentialsId: 'ssh-new'
+                    credentialsId: 'github-ssh'
                 )
             }
         }
@@ -27,7 +27,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh 
+                sh '''
                     docker stop tomcat-docker-container || true
                     docker rm tomcat-docker-container || true
 
@@ -35,7 +35,7 @@ pipeline {
                         --name tomcat-docker-container \
                         -p 8083:8080 \
                         tomcat-docker-app:latest
-                
+                '''
             }
         }
     }
