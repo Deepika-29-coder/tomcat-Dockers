@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        SONAR_PROJECT_KEY = 'tomcat-Docker'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -16,6 +20,41 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('OWASP Dependency Check') {
+            steps {
+                dependencyCheck(
+                    additionalArguments: '--scan .',
+                    odcInstallation: 'Dependency-Check'
+                )
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        mvn sonar:sonar \
+                          -Dsonar.projectKey=tomcat-Docker \
+                          -Dsonar.projectName=tomcat-Docker
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
