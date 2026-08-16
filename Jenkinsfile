@@ -1,4 +1,5 @@
 pipeline {
+
     agent any
 
     stages {
@@ -27,7 +28,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        mvn sonar:sonar \
+                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                         -Dsonar.projectKey=tomcat-Docker \
                         -Dsonar.projectName=tomcat-Docker
                     '''
@@ -42,6 +43,7 @@ pipeline {
                 }
             }
         }
+
     }
 
     post {
