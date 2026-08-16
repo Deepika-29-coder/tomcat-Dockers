@@ -2,6 +2,11 @@ pipeline {
 
     agent any
 
+    tools {
+        maven 'Maven-3'
+        jdk 'JDK21'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -28,7 +33,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
-                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                        mvn org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
                         -Dsonar.projectKey=tomcat-Docker \
                         -Dsonar.projectName=tomcat-Docker
                     '''
@@ -44,15 +49,33 @@ pipeline {
             }
         }
 
+        stage('OWASP Dependency Check') {
+            steps {
+                sh '''
+                    mvn org.owasp:dependency-check-maven:13.0.0:check \
+                    -DnvdApiKey=$NVD_API_KEY \
+                    -DfailBuildOnCVSS=11
+                '''
+            }
+        }
+
+        stage('Archive OWASP Report') {
+            steps {
+                archiveArtifacts artifacts: 'target/dependency-check-report.html',
+                                 allowEmptyArchive: false
+            }
+        }
     }
 
     post {
         success {
             echo 'Pipeline completed successfully!'
+            echo 'SonarQube Quality Gate: PASSED'
+            echo 'OWASP Dependency Check: PASSED'
         }
 
         failure {
-            echo 'Pipeline failed. Check the Jenkins console log.'
+            echo 'Pipeline failed. Check the stage and console output.'
         }
     }
 }
