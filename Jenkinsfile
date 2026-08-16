@@ -1,19 +1,13 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_PROJECT_KEY = 'tomcat-Docker'
-    }
-
     stages {
 
         stage('Checkout') {
             steps {
-                git(
-                    url: 'git@github.com:Deepika-29-coder/tomcat-Dockers.git',
-                    branch: 'master',
-                    credentialsId: 'github-ssh'
-                )
+                git branch: 'master',
+                    credentialsId: 'github-ssh',
+                    url: 'git@github.com:Deepika-29-coder/tomcat-Dockers.git'
             }
         }
 
@@ -29,22 +23,13 @@ pipeline {
             }
         }
 
-        stage('OWASP Dependency Check') {
-            steps {
-                dependencyCheck(
-                    additionalArguments: '--scan .',
-                    odcInstallation: 'Dependency-Check'
-                )
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('sonarqube') {
                     sh '''
                         mvn sonar:sonar \
-                          -Dsonar.projectKey=tomcat-Docker \
-                          -Dsonar.projectName=tomcat-Docker
+                        -Dsonar.projectKey=tomcat-Docker \
+                        -Dsonar.projectName=tomcat-Docker
                     '''
                 }
             }
@@ -57,25 +42,15 @@ pipeline {
                 }
             }
         }
+    }
 
-        stage('Docker Build') {
-            steps {
-                sh 'docker build -t tomcat-docker-app:latest .'
-            }
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
         }
 
-        stage('Deploy') {
-            steps {
-                sh '''
-                    docker stop tomcat-docker-container || true
-                    docker rm tomcat-docker-container || true
-
-                    docker run -d \
-                        --name tomcat-docker-container \
-                        -p 8083:8080 \
-                        tomcat-docker-app:latest
-                '''
-            }
+        failure {
+            echo 'Pipeline failed. Check the Jenkins console log.'
         }
     }
 }
