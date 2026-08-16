@@ -2,11 +2,6 @@ pipeline {
 
     agent any
 
-    tools {
-        maven 'Maven-3'
-        jdk 'JDK21'
-    }
-
     stages {
 
         stage('Checkout') {
@@ -51,11 +46,18 @@ pipeline {
 
         stage('OWASP Dependency Check') {
             steps {
-                sh '''
-                    mvn org.owasp:dependency-check-maven:13.0.0:check \
-                    -DnvdApiKey=$NVD_API_KEY \
-                    -DfailBuildOnCVSS=11
-                '''
+                withCredentials([
+                    string(
+                        credentialsId: 'nvd-api-key',
+                        variable: 'NVD_API_KEY'
+                    )
+                ]) {
+                    sh '''
+                        mvn org.owasp:dependency-check-maven:13.0.0:check \
+                        -DnvdApiKey="$NVD_API_KEY" \
+                        -DfailBuildOnCVSS=11
+                    '''
+                }
             }
         }
 
@@ -75,7 +77,7 @@ pipeline {
         }
 
         failure {
-            echo 'Pipeline failed. Check the stage and console output.'
+            echo 'Pipeline failed. Check the console output.'
         }
     }
 }
