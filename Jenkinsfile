@@ -67,6 +67,43 @@ pipeline {
                                  allowEmptyArchive: false
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t tomcat-docker-app:latest .
+                '''
+            }
+        }
+
+        stage('Trivy Security Scan') {
+            steps {
+                sh '''
+                    trivy --config /dev/null image \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    tomcat-docker-app:latest
+                '''
+            }
+        }
+
+        stage('Trivy Report') {
+            steps {
+                sh '''
+                    trivy --config /dev/null image \
+                    --format json \
+                    --output trivy-report.json \
+                    tomcat-docker-app:latest
+                '''
+            }
+        }
+
+        stage('Archive Trivy Report') {
+            steps {
+                archiveArtifacts artifacts: 'trivy-report.json',
+                                 allowEmptyArchive: false
+            }
+        }
     }
 
     post {
@@ -74,6 +111,7 @@ pipeline {
             echo 'Pipeline completed successfully!'
             echo 'SonarQube Quality Gate: PASSED'
             echo 'OWASP Dependency Check: PASSED'
+            echo 'Trivy HIGH/CRITICAL Scan: PASSED'
         }
 
         failure {
@@ -81,3 +119,4 @@ pipeline {
         }
     }
 }
+
